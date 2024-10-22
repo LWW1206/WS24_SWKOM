@@ -1,5 +1,17 @@
-FROM openjdk:21-jdk
+FROM openjdk:17-jdk-alpine
+
+RUN apk add --no-cache maven
+
 WORKDIR /app
-COPY target/*.jar app.jar
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline
+
+COPY src ./src
+
+RUN mvn clean package
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+CMD ["java", "-jar", "target/DMS-0.0.1-SNAPSHOT.jar"]
