@@ -1,9 +1,7 @@
 <h1>WS24SWKOM Semesterprojekt</h1>
 
-<h2>Application</h2>
+<h2>Start Application</h2>
 The application needs a running Docker Desktop
-
-To start the application
 ```bash
 docker-compose up
 ```
@@ -12,16 +10,16 @@ The user is saved in the public db in the auth_user table
 ```bash
 docker compose run --rm webserver createsuperuser
 ```
-To start the application after making changes to the code of the Rest Server
+To start the application after making changes to the code of the REST Server
 ```bash
 docker-compose up --build
 ```
-To stop the application
+<h2>Stop Application</h2>
 ```bash
 docker-compose down
 ```
-This command removes old dangling containers. It is recommended to do this once 
-in a while when making changes to the code
+<h3>Quality of life</h3>
+This command removes old dangling containers.
  ```bash
 docker system prune -f
 ```
