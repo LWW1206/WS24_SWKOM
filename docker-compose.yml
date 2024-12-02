@@ -11,10 +11,11 @@ services:
     restart: unless-stopped
 
   paperless-db:
-    image: postgres:13
+    build: paperless-db/.
+    image: postgres:14-alpine
     restart: unless-stopped
     volumes:
-      - /opt/docker-prod/paperless/pgdata:/var/lib/postgresql/data
+      - paperless-db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
@@ -38,10 +39,13 @@ services:
     volumes:
       - /opt/docker-prod/paperless/data:/usr/src/paperless/data
       - /opt/docker-prod/paperless/media:/usr/src/paperless/media
-    # env_file: docker-compose.env
+      - paperless-db-data:/var/lib/postgresql/data
     environment:
       PAPERLESS_REDIS: redis://paperless-broker:6379
       PAPERLESS_DBHOST: paperless-db
       PAPERLESS_URL: http://localhost
       PAPERLESS_OCR_LANGUAGE: deu
       PAPERLESS_TIME_ZONE: Europe/Berlin
+
+volumes:
+  paperless-db-data:
