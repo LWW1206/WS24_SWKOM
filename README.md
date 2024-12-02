@@ -7,23 +7,29 @@ The application needs a running Docker Desktop
 docker-compose up
 ```
 
-Run this command to setup a user for the Paperless Server. \
+To start the application after making changes to the code of the REST Server. 
+This will rebuild the paperless rest service. 
+
+<span style="color:rgba(255,0,0,0.7)"> First run **clean** from maven! </span>
+
+```bash
+docker-compose up --build
+```
+Run this command to setup an admin user for the Paperless Server. \
 The user is saved in the public db in the auth_user table
 ```bash
 docker compose run --rm webserver createsuperuser
 ```
-To start the application after making changes to the code of the REST Server
-```bash
-docker-compose up --build
-```
-
 <h2>Stop Application</h2>
-
 ```bash
 docker-compose down
 ```
+This also removes all volumes. After this u have to create the user again with the createsuperuser command. 
+```bash
+docker-compose down -v
+```
 <h2>Quality of life</h2>
-This command removes old dangling containers.
+This command removes old dangling containers. Can also fix issues with starting the application.
 
  ```bash
 docker system prune -f
