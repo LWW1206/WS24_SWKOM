@@ -21,13 +21,16 @@ The user is saved in the public db in the auth_user table
 docker compose run --rm webserver createsuperuser
 ```
 <h2>Stop Application</h2>
+
 ```bash
 docker-compose down
 ```
 This also removes all volumes. After this u have to create the user again with the createsuperuser command. 
+
 ```bash
 docker-compose down -v
 ```
+
 <h2>Quality of life</h2>
 This command removes old dangling containers. Can also fix issues with starting the application.
 
