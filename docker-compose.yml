@@ -1,14 +1,12 @@
 version: '3'
 services:
   paperless-rest:
-    build: .
+    build:
+      context: ./paperless-rest
+      dockerfile: Dockerfile
     ports:
       - "8081:8080"
     container_name: dms-app-container
-
-  paperless-broker:
-    image: redis:6.0
-    restart: unless-stopped
 
   paperless-db:
     build: paperless-db/.
@@ -23,29 +21,12 @@ services:
       POSTGRES_USER: paperless
       POSTGRES_PASSWORD: paperless
 
-  webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+  paperless-ui:
+    build:
+      context: ./paperless-ui
+      dockerfile: Dockerfile
     ports:
-      - "80:8000"
-    restart: unless-stopped
-    depends_on:
-      - paperless-db
-      - paperless-broker
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    volumes:
-      - /opt/docker-prod/paperless/data:/usr/src/paperless/data
-      - /opt/docker-prod/paperless/media:/usr/src/paperless/media
-      - paperless-db-data:/var/lib/postgresql/data
-    environment:
-      PAPERLESS_REDIS: redis://paperless-broker:6379
-      PAPERLESS_DBHOST: paperless-db
-      PAPERLESS_URL: http://localhost
-      PAPERLESS_OCR_LANGUAGE: deu
-      PAPERLESS_TIME_ZONE: Europe/Berlin
+      - "80:80"
 
 volumes:
   paperless-db-data:
