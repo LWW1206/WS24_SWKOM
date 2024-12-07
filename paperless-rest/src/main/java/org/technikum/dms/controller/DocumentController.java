@@ -1,8 +1,12 @@
-package org.technikum.dms.document;
+package org.technikum.dms.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.technikum.dms.entity.DocumentDTO;
+import org.technikum.dms.service.DocumentService;
+import org.technikum.dms.service.RabbitMQSender;
+import org.technikum.dms.entity.Document;
 
 @RestController
 @RequestMapping("/api/documents")

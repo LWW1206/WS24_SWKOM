@@ -1,4 +1,4 @@
-package org.technikum.dms;
+package org.technikum.dms.service;
 
 import org.springframework.stereotype.Service;
 

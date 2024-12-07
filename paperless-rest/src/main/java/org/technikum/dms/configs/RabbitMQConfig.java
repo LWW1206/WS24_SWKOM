@@ -1,4 +1,4 @@
-package org.technikum.dms.Config;
+package org.technikum.dms.Configs;
 import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

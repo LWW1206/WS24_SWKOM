@@ -1,4 +1,4 @@
-package org.technikum.dms.Config;
+package org.technikum.dms.Configs;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

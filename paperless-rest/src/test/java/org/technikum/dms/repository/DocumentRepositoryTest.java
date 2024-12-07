@@ -1,5 +1,4 @@
-package org.technikum.dms.document;
-
+package org.technikum.dms.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.technikum.dms.DmsApplication;
+import org.technikum.dms.entity.Document;
 
 import java.util.List;
 

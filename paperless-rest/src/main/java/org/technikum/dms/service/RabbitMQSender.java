@@ -1,6 +1,6 @@
-package org.technikum.dms.document;
+package org.technikum.dms.service;
 
-import org.technikum.dms.Config.RabbitMQConfig;
+import org.technikum.dms.Configs.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

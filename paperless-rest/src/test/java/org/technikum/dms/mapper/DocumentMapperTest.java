@@ -1,4 +1,4 @@
-package org.technikum.dms.document;
+package org.technikum.dms.mapper;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.technikum.dms.entity.Document;
+import org.technikum.dms.entity.DocumentDTO;
 
 import java.util.Set;
 
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Slf4j
 @TestPropertySource("/application-test.properties")
-public class DocumentMapperIntegrationTest {
+class DocumentMapperTest {
     @Autowired
     private DocumentMapper documentMapper;
 

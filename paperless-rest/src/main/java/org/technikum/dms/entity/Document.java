@@ -1,4 +1,4 @@
-package org.technikum.dms.document;
+package org.technikum.dms.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

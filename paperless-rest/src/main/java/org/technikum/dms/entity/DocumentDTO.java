@@ -1,4 +1,4 @@
-package org.technikum.dms.document;
+package org.technikum.dms.entity;
 
 import lombok.Data;
 

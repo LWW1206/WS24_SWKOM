@@ -56,3 +56,6 @@ http://localhost:8081/hello/urlparam
 
 API Swagger Documentation: \
 http://localhost:8081/docs/swagger-ui/index.html
+
+RabbitMQ: \
+http://localhost:15672/

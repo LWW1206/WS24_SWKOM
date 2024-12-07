@@ -1,7 +1,11 @@
-package org.technikum.dms.document;
+package org.technikum.dms.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.technikum.dms.entity.DocumentDTO;
+import org.technikum.dms.mapper.DocumentMapper;
+import org.technikum.dms.repository.DocumentRepository;
+import org.technikum.dms.entity.Document;
 
 @Service
 public class DocumentService {
