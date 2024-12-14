@@ -23,7 +23,8 @@ public class Document {
 
     private String status;
 
-    private String content;
+    @Lob
+    private byte[] file;  // Store the file content as byte array
 
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 }

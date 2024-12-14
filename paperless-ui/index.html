@@ -2,9 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        form {
+            display: inline-block;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input[type="file"] {
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-top: 20px;
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <h1>Webdesign is my passion</h1>
+<h1>Upload a PDF Document</h1>
+<form id="uploadForm">
+    <input type="file" id="pdfFile" name="file" accept="application/pdf" required><br>
+    <button type="submit">Upload PDF</button>
+</form>
+
+<div class="message" id="successMessage" style="display: none;">PDF uploaded successfully!</div>
+<div class="error" id="errorMessage" style="display: none;">Failed to upload PDF. Please try again.</div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData();
+        const file = document.getElementById('pdfFile').files[0];
+
+        if (!file) {
+            console.error('No file selected');
+            return;
+        }
+
+        console.log('File selected:', file);
+
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('http://localhost:8081/api/documents', {
+                method: 'POST',
+                body: formData
+            });
+
+
+            if (response.ok) {
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+            } else {
+                throw new Error('Failed to upload PDF');
+            }
+        } catch (error) {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    });
+</script>
 </body>
 </html>
