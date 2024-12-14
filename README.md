@@ -7,10 +7,8 @@ The application needs a running Docker Desktop
 docker-compose up
 ```
 
-To start the application after making changes to the code of the REST Server. 
-This will rebuild the paperless rest service. 
-
-<span style="color:rgba(255,0,0,0.7)"> First run **clean** from maven! </span>
+To start the application after making changes to the code. 
+This will rebuild everything. Do a "mvn clean" if anything doesn't work
 
 ```bash
 docker-compose up --build
