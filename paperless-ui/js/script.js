@@ -10,9 +10,3 @@ function sendHelloWorldRequest(){
         }
     });
 }
-
-function uploadDocument() {
-    const fileInput = $("#formFile")[0];
-    const selectedFile = fileInput.files[0];
-    console.log("Selected file:", selectedFile);
-}
