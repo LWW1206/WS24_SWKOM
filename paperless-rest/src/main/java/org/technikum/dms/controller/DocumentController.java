@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.technikum.dms.entity.Document;
 import org.technikum.dms.entity.DocumentDTO;
 import org.technikum.dms.service.DocumentService;
+import org.technikum.dms.service.RabbitMQSender;
+import org.technikum.dms.service.FileMessage;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +21,9 @@ public class DocumentController {
 
     @Autowired
     private DocumentService documentService;
+
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
 
     @PostMapping
     public ResponseEntity<String> uploadDocument(
@@ -36,7 +41,13 @@ public class DocumentController {
 
             documentDTO.setContent(file.getBytes());
 
-            documentService.uploadDocument(file);
+            FileMessage fileMessage = new FileMessage(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            );
+
+            rabbitMQSender.sendMultipartFile(fileMessage);
 
             return ResponseEntity.ok("Document uploaded successfully.");
         } catch (IOException e) {
