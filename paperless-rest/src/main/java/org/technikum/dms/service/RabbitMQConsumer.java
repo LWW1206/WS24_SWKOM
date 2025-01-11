@@ -2,14 +2,8 @@ package org.technikum.dms.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.technikum.dms.service.FileMessage;
-import org.technikum.dms.service.CustomMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageListener;
-import org.technikum.dms.Configs.RabbitMQConfig;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
+import org.technikum.dms.configs.RabbitMQConfig;
 
 
 import java.io.InvalidObjectException;
