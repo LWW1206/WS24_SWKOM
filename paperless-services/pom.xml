@@ -10,10 +10,12 @@
     </parent>
 
     <groupId>org.technikum</groupId>
-    <artifactId>DMS</artifactId>
+    <packaging>jar</packaging>
+    <artifactId>paperless</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>DMS</name>
-    <description>DMS</description>
+    <name>PaperlessServices</name>
+    <description>PaperlessServices</description>
+
     <url/>
     <licenses>
         <license/>

@@ -33,7 +33,7 @@ public class DocumentService {
 
         if (filetype == null || !filetype.equals("application/pdf") ||
                 (filename != null && !filename.toLowerCase().endsWith(".pdf"))) {
-            throw new InvalidObjectException ("Invalid file type. Only PDF files are allowed.");
+            throw new InvalidObjectException("Invalid file type. Only PDF files are allowed.");
         }
 
         Document document = new Document();

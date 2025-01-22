@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 public class ConnectionTestService {
 
     public String helloWorldWithDummyUrlParam(String dummyUrlParam) {
-        return "Hello World! Link param was: <" +  dummyUrlParam + ">";
+        return "Hello World! Link param was: <" + dummyUrlParam + ">";
     }
 }

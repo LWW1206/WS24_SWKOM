@@ -8,7 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
       </profile>
-      <profile name="Annotation profile for DMS" enabled="true">
+      <profile name="Annotation profile for PaperlessServices" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -18,13 +18,19 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.5.5.Final/mapstruct-1.5.5.Final.jar" />
         </processorPath>
+        <module name="paperless-worker" />
         <module name="DMS" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="PaperlessWorker" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="DMS" options="-parameters" />
+      <module name="PaperlessWorker" options="-parameters" />
+      <module name="paperless-worker" options="-parameters" />
     </option>
   </component>
 </project>

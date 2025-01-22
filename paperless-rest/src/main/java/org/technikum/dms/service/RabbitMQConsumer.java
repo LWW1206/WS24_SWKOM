@@ -9,13 +9,13 @@ import org.technikum.dms.configs.RabbitMQConfig;
 import java.io.InvalidObjectException;
 
 @Service
-public class RabbitMQConsumer{
+public class RabbitMQConsumer {
 
     @Autowired
     private DocumentService documentService;
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
-    public void handleMessage(FileMessage fileMessage){
+    public void handleMessage(FileMessage fileMessage) {
         System.out.println("Received file: " + fileMessage.getFileName());
         System.out.println("Content type: " + fileMessage.getContentType());
         System.out.println("File size: " + fileMessage.getFileData().length);

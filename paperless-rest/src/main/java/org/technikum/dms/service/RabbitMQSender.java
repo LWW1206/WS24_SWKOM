@@ -11,7 +11,7 @@ public class RabbitMQSender {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public void sendMultipartFile(FileMessage file){
+    public void sendMultipartFile(FileMessage file) {
 
         rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, file);
 

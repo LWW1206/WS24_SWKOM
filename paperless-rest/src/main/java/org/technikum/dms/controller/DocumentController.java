@@ -57,7 +57,7 @@ public class DocumentController {
     }
 
     @GetMapping
-    public ResponseEntity getAllDocuments(){
+    public ResponseEntity getAllDocuments() {
         List<Document> documents = documentService.getAllDocuments();
         if (documents.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -69,7 +69,7 @@ public class DocumentController {
     public ResponseEntity downloadDocument(@PathVariable int documentId) {
         Optional<Document> document = documentService.byId(documentId);
 
-        if (document.isEmpty()){
+        if (document.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
