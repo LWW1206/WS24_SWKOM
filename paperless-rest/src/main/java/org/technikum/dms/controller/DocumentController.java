@@ -41,6 +41,8 @@ public class DocumentController {
 
             documentDTO.setContent(file.getBytes());
 
+            documentService.uploadDocument(file);
+
             FileMessage fileMessage = new FileMessage(
                     file.getOriginalFilename(),
                     file.getContentType(),

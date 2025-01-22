@@ -10,21 +10,23 @@ import org.springframework.amqp.core.MessageListener;
 import org.technikum.dms.Configs.RabbitMQConfig;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 
 import java.io.InvalidObjectException;
 
 @Service
 public class RabbitMQConsumer{
+    private static final Logger logger = LoggerFactory.getLogger(RabbitMQConsumer.class);
 
     @Autowired
     private DocumentService documentService;
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
     public void handleMessage(FileMessage fileMessage){
-        System.out.println("Received file: " + fileMessage.getFileName());
-        System.out.println("Content type: " + fileMessage.getContentType());
-        System.out.println("File size: " + fileMessage.getFileData().length);
+        logger.info("Received FileMessageName: {}", fileMessage.getFileName());
 
         CustomMultipartFile multipartFile = new CustomMultipartFile(
                 fileMessage.getFileName(),
@@ -34,11 +36,10 @@ public class RabbitMQConsumer{
         );
 
         try {
-            documentService.uploadDocument(multipartFile);
-            System.out.println("Received file: " + fileMessage.getFileName());
-        } catch (InvalidObjectException e) {
-            System.err.println("Error processing fileMessage: " + e.getMessage());
+            //ocr
+            logger.debug("Processing message: {}", fileMessage.getFileName());
+        } catch (Exception e) {
+            logger.error("Error while processing message: {}", e.getMessage(), e);
         }
-        System.out.println("File consumed from RabbitMQ: " + multipartFile.getName());
     }
 }
