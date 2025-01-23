@@ -1,6 +1,5 @@
 package org.technikum.dms.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import org.technikum.dms.configs.RabbitMQConfig;
