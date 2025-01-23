@@ -9,6 +9,8 @@ import org.technikum.dms.entity.DocumentDTO;
 import org.technikum.dms.service.DocumentService;
 import org.technikum.dms.service.RabbitMQSender;
 import org.technikum.dms.service.FileMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.Optional;
 @RequestMapping("/api/documents")
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
 public class DocumentController {
+    private static final Logger logger = LoggerFactory.getLogger(RabbitMQSender.class);
+
 
     @Autowired
     private DocumentService documentService;
@@ -41,6 +45,8 @@ public class DocumentController {
 
             documentDTO.setContent(file.getBytes());
 
+            documentService.uploadDocument(file);
+
             FileMessage fileMessage = new FileMessage(
                     file.getOriginalFilename(),
                     file.getContentType(),
@@ -51,7 +57,7 @@ public class DocumentController {
 
             return ResponseEntity.ok("Document uploaded successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to process the file: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Failed to process the file");
         }
     }
