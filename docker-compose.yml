@@ -5,7 +5,7 @@ services:
       context: ./paperless-rest
       dockerfile: Dockerfile
     ports:
-      - "8081:8080" # Maps host port 8081 to container port 8080
+      - "8081:8080"
     container_name: dms-app-container
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq # RabbitMQ hostname
@@ -25,7 +25,8 @@ services:
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      REST_SERVICE_URL: http://paperless-rest:8080
+      SPRING_RABBITMQ_USERNAME: paperless
+      SPRING_RABBITMQ_PASSWORD: paperless
     ports:
       - "8082:8082"
     depends_on:
