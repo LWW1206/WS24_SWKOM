@@ -10,6 +10,8 @@ services:
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq # RabbitMQ hostname
       SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: rabbitmq
       SPRING_DATASOURCE_URL: jdbc:postgresql://paperless-db:5432/paperless
       SPRING_DATASOURCE_USERNAME: paperless
       SPRING_DATASOURCE_PASSWORD: paperless
@@ -25,8 +27,11 @@ services:
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: paperless
-      SPRING_RABBITMQ_PASSWORD: paperless
+      SPRING_RABBITMQ_USERNAME: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: rabbitmq
+      SPRING_DATASOURCE_URL: jdbc:postgresql://paperless-db:5432/paperless
+      SPRING_DATASOURCE_USERNAME: paperless
+      SPRING_DATASOURCE_PASSWORD: paperless
     ports:
       - "8082:8082"
     depends_on:
