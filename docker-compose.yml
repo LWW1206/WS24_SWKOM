@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   paperless-rest:
     build:
@@ -16,8 +16,10 @@ services:
       SPRING_DATASOURCE_USERNAME: paperless
       SPRING_DATASOURCE_PASSWORD: paperless
     depends_on:
-      - paperless-db
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      paperless-db:
+        condition: service_started
 
   paperless-worker:
     build:
@@ -35,7 +37,8 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   paperless-db:
     build: paperless-db/.
@@ -67,6 +70,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   paperless-db-data:
