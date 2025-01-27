@@ -1,24 +1,26 @@
 package org.technikum.dms.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import org.technikum.dms.configs.RabbitMQConfig;
 
-
 import java.io.InvalidObjectException;
 
 @Service
+@Slf4j
 public class RabbitMQConsumer {
+    private final DocumentService documentService;
 
-    @Autowired
-    private DocumentService documentService;
+    public RabbitMQConsumer(DocumentService documentService) {
+        this.documentService = documentService;
+    }
 
-    @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
+    @RabbitListener(queues = "${queue.input}")
     public void handleMessage(FileMessage fileMessage) {
-        System.out.println("Received file: " + fileMessage.getFileName());
-        System.out.println("Content type: " + fileMessage.getContentType());
-        System.out.println("File size: " + fileMessage.getFileData().length);
+        log.info("Received file: {} with size: {}", fileMessage.getFileName(), fileMessage.getFileData().length);
 
         CustomMultipartFile multipartFile = new CustomMultipartFile(
                 fileMessage.getFileName(),
@@ -28,11 +30,13 @@ public class RabbitMQConsumer {
         );
 
         try {
+            log.info("Processing file: {}", fileMessage.getFileName());
             documentService.uploadDocument(multipartFile);
-            System.out.println("Received file: " + fileMessage.getFileName());
-        } catch (InvalidObjectException e) {
-            System.err.println("Error processing fileMessage: " + e.getMessage());
+            log.info("Successfully processed file: {}", fileMessage.getFileName());
+        } catch (Exception e) {
+            log.error("Error processing file {}: {}", fileMessage.getFileName(), e.getMessage(), e);
+            throw new AmqpRejectAndDontRequeueException("Failed to process message", e);
         }
-        System.out.println("File consumed from RabbitMQ: " + multipartFile.getName());
     }
+
 }

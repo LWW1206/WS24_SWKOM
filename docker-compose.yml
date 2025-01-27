@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   paperless-rest:
     build:
@@ -7,6 +7,38 @@ services:
     ports:
       - "8081:8080"
     container_name: dms-app-container
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq # RabbitMQ hostname
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: rabbitmq
+      SPRING_DATASOURCE_URL: jdbc:postgresql://paperless-db:5432/paperless
+      SPRING_DATASOURCE_USERNAME: paperless
+      SPRING_DATASOURCE_PASSWORD: paperless
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      paperless-db:
+        condition: service_started
+
+  paperless-worker:
+    build:
+      context: ./paperless-services
+      dockerfile: Dockerfile
+    container_name: paperless-worker-container
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: rabbitmq
+      SPRING_DATASOURCE_URL: jdbc:postgresql://paperless-db:5432/paperless
+      SPRING_DATASOURCE_USERNAME: paperless
+      SPRING_DATASOURCE_PASSWORD: paperless
+    ports:
+      - "8082:8082"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   paperless-db:
     build: paperless-db/.
@@ -27,6 +59,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    container_name: paperless-ui-container
 
   rabbitmq:
     image: rabbitmq:management
@@ -37,6 +70,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   paperless-db-data:
