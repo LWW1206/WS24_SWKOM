@@ -4,7 +4,7 @@ services:
   ##########################################################################
   paperlessrest:
     build:
-      context: ./PaperlessREST
+      context: ./paperless-rest
       dockerfile: Dockerfile
     # All config via ENV variables (no application.properties)
     environment:
@@ -63,7 +63,7 @@ services:
   ##########################################################################
   paperlessui:
     build:
-      context: ./PaperlessUI
+      context: ./paperless-ui
       dockerfile: Dockerfile
     depends_on:
       - paperlessrest
@@ -112,7 +112,7 @@ services:
   ##########################################################################
   paperlessworker:
     build:
-      context: ./PaperlessWORKER
+      context: ./paperless-services
       dockerfile: Dockerfile
     environment:
       # --- Basic Spring Boot server ---
