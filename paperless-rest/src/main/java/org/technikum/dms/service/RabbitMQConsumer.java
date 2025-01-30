@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import org.technikum.dms.configs.RabbitMQConfig;
+import org.technikum.dms.entity.CustomMultipartFile;
+import org.technikum.dms.entity.FileMessage;
 
 
 import java.io.InvalidObjectException;

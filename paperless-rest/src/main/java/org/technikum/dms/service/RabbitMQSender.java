@@ -4,6 +4,7 @@ import org.technikum.dms.configs.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.technikum.dms.entity.FileMessage;
 
 @Service
 public class RabbitMQSender {

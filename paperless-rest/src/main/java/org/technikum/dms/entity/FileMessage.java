@@ -1,7 +1,10 @@
-package org.technikum.dms.service;
+package org.technikum.dms.entity;
+
+import lombok.Getter;
 
 import java.io.Serializable;
 
+@Getter
 public class FileMessage implements Serializable {
     private String fileName;
     private String contentType;
@@ -11,17 +14,5 @@ public class FileMessage implements Serializable {
         this.fileName = fileName;
         this.contentType = contentType;
         this.fileData = fileData;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public byte[] getFileData() {
-        return fileData;
     }
 }

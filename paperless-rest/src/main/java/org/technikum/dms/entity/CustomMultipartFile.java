@@ -1,10 +1,13 @@
-package org.technikum.dms.service;
+package org.technikum.dms.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+@Getter
 public class CustomMultipartFile implements MultipartFile {
     private final String name;
     private final String originalFilename;
@@ -16,21 +19,6 @@ public class CustomMultipartFile implements MultipartFile {
         this.originalFilename = originalFilename;
         this.contentType = contentType;
         this.content = content;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getOriginalFilename() {
-        return originalFilename;
-    }
-
-    @Override
-    public String getContentType() {
-        return contentType;
     }
 
     @Override
