@@ -3,7 +3,7 @@ package org.technikum.dms.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.technikum.dms.entity.Document;
-import org.technikum.dms.entity.DocumentDTO;
+import org.technikum.dms.dto.DocumentDTO;
 
 @Mapper(componentModel = "spring")
 public interface DocumentMapper {

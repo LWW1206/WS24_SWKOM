@@ -4,5 +4,5 @@ import org.springframework.stereotype.Repository;
 import org.technikum.dms.entity.Document;
 
 @Repository
-public interface DocumentRepository extends JpaRepository<Document, Integer>{
+public interface DocumentRepository extends JpaRepository<Document, String> {
 }

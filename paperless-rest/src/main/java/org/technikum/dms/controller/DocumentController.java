@@ -1,81 +1,86 @@
 package org.technikum.dms.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.technikum.dms.entity.Document;
-import org.technikum.dms.entity.DocumentDTO;
-import org.technikum.dms.service.DocumentService;
-import org.technikum.dms.service.RabbitMQSender;
-import org.technikum.dms.service.FileMessage;
+import org.technikum.dms.dto.DocumentDTO;
+import org.technikum.dms.service.DocumentServiceImpl;
+import org.technikum.dms.service.IDocumentService;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/documents")
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
 public class DocumentController {
+    private final IDocumentService documentService;
+    public DocumentController(IDocumentService documentService) {
+        this.documentService = documentService;
+    }
 
-    @Autowired
-    private DocumentService documentService;
-
-    @Autowired
-    private RabbitMQSender rabbitMQSender;
-
-    @PostMapping
-    public ResponseEntity<String> uploadDocument(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "name", required = false) String name
-    ) {
-
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("No file provided");
-        }
-
+    @Operation(summary="Uploads a document")
+    @ApiResponses({
+            @ApiResponse(responseCode="201",description="Document uploaded")
+    })
+    @PostMapping(consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentDTO> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            DocumentDTO documentDTO = new DocumentDTO();
-            documentDTO.setName(name != null ? name : file.getOriginalFilename());
+            return ResponseEntity.status(201).body(documentService.uploadFile(file));
+        } catch(Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 
-            documentDTO.setContent(file.getBytes());
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDocument(@PathVariable String id) {
+        try {
+            documentService.deleteDocument(id);
+            return ResponseEntity.noContent().build();
+        } catch(Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-            FileMessage fileMessage = new FileMessage(
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getBytes()
-            );
-
-            rabbitMQSender.sendMultipartFile(fileMessage);
-
-            return ResponseEntity.ok("Document uploaded successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Failed to process the file");
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> getDocumentById(@PathVariable String id) {
+        try {
+            var fileData = documentService.getDocumentFileById(id);
+            var doc = documentService.getDocumentById(id);
+            if(doc==null||fileData==null) {
+                return ResponseEntity.notFound().build();
+            }
+            var headers=new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment",doc.getFilename());
+            return ResponseEntity.ok().headers(headers).body(fileData);
+        } catch(Exception e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping
-    public ResponseEntity getAllDocuments(){
-        List<Document> documents = documentService.getAllDocuments();
-        if (documents.isEmpty()) {
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<List<DocumentDTO>> getAllDocuments() {
+        try {
+            return ResponseEntity.ok(documentService.getAllDocuments());
+        } catch(Exception e) {
+            return ResponseEntity.status(500).build();
         }
-        return ResponseEntity.ok(documents);
     }
 
-    @GetMapping("/download/{documentId}")
-    public ResponseEntity downloadDocument(@PathVariable int documentId) {
-        Optional<Document> document = documentService.byId(documentId);
-
-        if (document.isEmpty()){
-            return ResponseEntity.noContent().build();
+    @GetMapping("/search")
+    public ResponseEntity<List<DocumentDTO>> searchDocuments(@RequestParam String query) {
+        try {
+            if(query==null||query.isBlank()) {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.ok(documentService.searchDocuments(query));
+        } catch(Exception e) {
+            return ResponseEntity.status(500).build();
         }
-
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + document.get().getName() + "\"")
-                .header("Content-Type", "application/octet-stream")
-                .body(document.get().getFile());
     }
 }
