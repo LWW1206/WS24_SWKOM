@@ -1,81 +1,76 @@
 package org.technikum.paperless.service;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.technikum.paperless.configs.rabbitMQ.RabbitMQConfig;
+import org.technikum.paperless.configs.rabbitMQ.RabbitMQSender;
 import io.minio.GetObjectArgs;
+
 import io.minio.MinioClient;
-import net.sourceforge.tess4j.Tesseract;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.technikum.paperless.configs.PaperlessWorkerProperties;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.time.Instant;
-import java.util.HashMap;
+import java.io.InputStream;
 
-/* Worker pulls the PDF from MinIO (step 5), runs Tesseract.
-   Worker indexes the doc in Elasticsearch (step 6b). */
+@Slf4j
 @Service
 public class ProcessingService {
-    private final OcrJobProducerImpl resultSender;
-    private final Tesseract tesseract;
-    private final MinioClient minioClient;
-    private final ElasticsearchClient esClient;
 
-    public ProcessingService(
-            OcrJobProducerImpl resultSender,
-            PaperlessWorkerProperties props
-    ) {
-        this.resultSender = resultSender;
-        this.tesseract = new Tesseract();
-        this.tesseract.setDatapath("/usr/share/tesseract-ocr/4.00/tessdata");
-        this.tesseract.setLanguage("eng");
-        var m = props.minio();
-        this.minioClient = MinioClient.builder()
-                .endpoint(m.url())
-                .credentials(m.accessKey(),m.secretKey())
-                .build();
-        var esUri = props.elasticsearch().uris();
-        var restClient = RestClient.builder(HttpHost.create(esUri)).build();
-        var transport = new RestClientTransport(restClient,new JacksonJsonpMapper());
-        this.esClient = new ElasticsearchClient(transport);
-    }
+    @Autowired
+    private MinioClient minioClient;
 
-    @RabbitListener(queues = "${paperlessworker.rabbitmq.processing-queue}")
-    public void processOcrJob(String rawMessage) {
-        var json=new JSONObject(rawMessage);
-        var docId=json.getString("documentId");
-        var filename=json.optString("filename","unknown.pdf");
+    @Autowired
+    private org.technikum.paperless.service.OCRService ocrService;
+
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
+
+    @Autowired
+    private org.technikum.paperless.service.ElasticsearchService elasticsearchService;
+
+    @RabbitListener(queues = RabbitMQConfig.PROCESSING_QUEUE)
+    public void processOcrJob(String message) {
+        log.info("Received message from processing queue: {}", message);
+
         try {
-            var stream=minioClient.getObject(GetObjectArgs.builder()
-                    .bucket("documents").object(docId).build());
-            var tempFile=new File("/tmp/"+docId+".pdf");
-            try(var fos=new FileOutputStream(tempFile)) {
-                byte[] buffer=new byte[1024];int bytesRead;
-                while((bytesRead=stream.read(buffer))!=-1) {
-                    fos.write(buffer,0,bytesRead);
-                }
-            }
-            var ocrText=tesseract.doOCR(tempFile);
-            indexDocument(docId,filename,ocrText);
-            resultSender.sendToResultQueue(docId,ocrText);
-        } catch(Exception e) {}
-    }
+            JSONObject jsonMessage = new JSONObject(message);
+            String documentId = jsonMessage.getString("documentId");
+            String filename = jsonMessage.getString("filename");
+            log.info("Processing OCR job for document ID: {}", documentId);
 
-    private void indexDocument(String docId,String filename,String ocrText) throws Exception {
-        var jsonMap=new HashMap<String,Object>();
-        jsonMap.put("documentId",docId);
-        jsonMap.put("filename",filename);
-        jsonMap.put("ocrText",ocrText);
-        jsonMap.put("@timestamp", Instant.now().toString());
-        var req=IndexRequest.of(i->i.index("documents").id(docId).document(jsonMap));
-        IndexResponse r=esClient.index(req);
+            // Fetch the document from MinIO
+            log.info("Fetching document from MinIO for document ID: {}", documentId);
+            InputStream documentStream = minioClient.getObject(
+                    GetObjectArgs.builder().bucket("documents").object(documentId).build());
+
+            File tempFile = new File("/tmp/" + documentId + ".pdf");
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = documentStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+                log.info("File successfully downloaded to: {}", tempFile.getAbsolutePath());
+            }
+
+            // Perform OCR
+            log.info("Starting OCR process for file: {}", tempFile.getName());
+            String ocrText = ocrService.extractText(tempFile);
+            log.info("OCR process completed for document ID: {}. Extracted text: {}"+ documentId+ ocrText);
+
+            //Index Document for elastic
+            elasticsearchService.indexDocument(documentId, filename, ocrText);
+
+            // Send result to result_queue
+            log.info("Sending OCR result to result queue for document ID: {}", documentId);
+            rabbitMQSender.sendToResultQueue(documentId, ocrText);
+            log.info("OCR result successfully sent to result queue.");
+
+        } catch (Exception e) {
+            log.error("Error processing OCR job: {}", e.getMessage(), e);
+        }
     }
 }

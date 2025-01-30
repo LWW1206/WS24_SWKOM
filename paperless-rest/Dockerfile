@@ -1,5 +1,11 @@
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17-jdk-slim
+
+RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-eng ghostscript
+
 WORKDIR /app
-COPY target/PaperlessREST-0.0.1-SNAPSHOT.jar paperless-rest.jar
-EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "paperless-rest.jar"]
+
+COPY ./target/DMS-0.0.1-SNAPSHOT.jar paperless-service.jar
+
+EXPOSE 8082
+
+CMD ["java", "-jar", "paperless-service.jar"]

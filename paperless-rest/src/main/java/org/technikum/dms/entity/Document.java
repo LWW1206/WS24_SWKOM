@@ -1,39 +1,41 @@
 package org.technikum.dms.entity;
-import org.technikum.dms.dto.DocumentDTO;
 
+import org.technikum.dms.dto.DocumentDTO;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="files")
-@Getter @Setter
+@Table(name = "files")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Document {
+
     @Id
     private String id;
+
     private String filename;
     private long filesize;
     private String filetype;
     private LocalDateTime uploadDate;
     private boolean ocrJobDone;
-
-    @Lob
     private byte[] file;
 
-    public Document(DocumentDTO dto) {
-        this.id = dto.getId();
-        this.filename = dto.getFilename();
-        this.filesize = dto.getFilesize();
-        this.filetype = dto.getFiletype();
-        this.uploadDate = dto.getUploadDate();
-        this.ocrJobDone = dto.isOcrJobDone();
-        this.file = dto.getFileData();
+    public Document(String documentId, String filename) {
+        this.id = documentId;
+        this.filename = filename;
+    }
+
+    public Document(DocumentDTO documentDTO) {
+        this.id = documentDTO.getId();
+        this.filename = documentDTO.getFilename();
+        this.filesize = documentDTO.getFilesize();
+        this.filetype = documentDTO.getFiletype();
+        this.uploadDate = documentDTO.getUploadDate();
+        this.ocrJobDone = documentDTO.isOcrJobDone();
     }
 }

@@ -1,158 +1,131 @@
 services:
-  ##########################################################################
-  # PAPERLESS REST (Spring Boot) - No app.properties, only environment vars
-  ##########################################################################
-  paperlessrest:
+  paperless-rest:
     build:
-      context: ./PaperlessREST
+      context: ./paperless-rest
       dockerfile: Dockerfile
-    # All config via ENV variables (no application.properties)
+    container_name: paperless-rest
+    ports:
+      - "8081:8081"
     environment:
-      # --- Basic Spring Boot server ---
-      SERVER_PORT: 8081
-      SPRING_OUTPUT_ANSI_ENABLED: ALWAYS  # Force color logs
-      LOGGING_LEVEL_ROOT: INFO           # Root logging level
-      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-
-      # --- DB config ---
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/paperless_DB
       SPRING_DATASOURCE_USERNAME: paperless
       SPRING_DATASOURCE_PASSWORD: paperless
-
-      # --- RabbitMQ ---
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: paperless
       SPRING_RABBITMQ_PASSWORD: paperless
-      PAPERLESSREST_RABBITMQ_PROCESSING_QUEUE: "document_processing_queue"
-      PAPERLESSREST_RABBITMQ_RESULT_QUEUE: "document_result_queue"
-      PAPERLESSREST_RABBITMQ_EXCHANGE: "document_exchange"
-      PAPERLESSREST_RABBITMQ_ROUTING_KEY: "document_routing_key"
-
-      # --- MinIO ---
-      PAPERLESSREST_MINIO_URL: "http://minio:9000"
-      PAPERLESSREST_MINIO_ACCESS_KEY: "paperless"
-      PAPERLESSREST_MINIO_SECRET_KEY: "paperless"
-
-      # --- Elasticsearch ---
-      PAPERLESSREST_ELASTICSEARCH_URIS: "http://elasticsearch:9200"
-
-      # --- File upload limits ---
-      SPRING_SERVLET_MULTIPART_ENABLED: "true"
-      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
-      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 10MB
-
-      # --- Swagger/OpenAPI ---
-      SPRINGDOC_API_DOCS_PATH: /api-docs
-      SPRINGDOC_SWAGGER_UI_PATH: /swagger-ui.html
-
+      RABBITMQ_PROCESSING_QUEUE: document_processing_queue
+      RABBITMQ_RESULT_QUEUE: document_result_queue
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_KEY: paperless
+      MINIO_SECRET_KEY: paperless
     depends_on:
       - postgres
       - rabbitmq
       - elasticsearch
       - minio
-    ports:
-      - "8081:8081"  # Host:Container
+    networks:
+      - paperless-network
 
-  ##########################################################################
-  # PAPERLESS UI (Nginx) - Just a static UI that calls the REST API
-  ##########################################################################
-  paperlessui:
+  paperless-ui:
     build:
-      context: ./PaperlessUI
+      context: ./paperless-ui
       dockerfile: Dockerfile
-    depends_on:
-      - paperlessrest
+    container_name: paperless-ui
     ports:
       - "80:80"
+    depends_on:
+      - paperless-rest
+    networks:
+      - paperless-network
 
-  ##########################################################################
-  # POSTGRES - DB for our application
-  ##########################################################################
   postgres:
     image: postgres:14-alpine
-    environment:
-      POSTGRES_PASSWORD: paperless
-      POSTGRES_USER: paperless
-      POSTGRES_DB: paperless_DB
+    container_name: postgres
     ports:
       - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=paperless
+      - POSTGRES_USER=paperless
+      - POSTGRES_DB=paperless_DB
+    networks:
+      - paperless-network
 
-  ##########################################################################
-  # RABBITMQ - For asynchronous messaging
-  ##########################################################################
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: paperless
       RABBITMQ_DEFAULT_PASS: paperless
-    ports:
-      - "5672:5672"
-      - "15672:15672" # RabbitMQ Management UI
-
-  ##########################################################################
-  # MINIO - For file storage
-  ##########################################################################
+    networks:
+      - paperless-network
+  
   minio:
     image: minio/minio
+    container_name: minio
     command: server /data --console-address ":9090"
-    environment:
-      MINIO_ROOT_USER: paperless
-      MINIO_ROOT_PASSWORD: paperless
     ports:
       - "9000:9000"
       - "9090:9090"
-
-  ##########################################################################
-  # PAPERLESS WORKER (Spring Boot) - OCR processing
-  ##########################################################################
-  paperlessworker:
-    build:
-      context: ./PaperlessWORKER
-      dockerfile: Dockerfile
     environment:
-      # --- Basic Spring Boot server ---
-      SERVER_PORT: 8082
-      SPRING_OUTPUT_ANSI_ENABLED: ALWAYS
-      LOGGING_LEVEL_ROOT: INFO
+      MINIO_ROOT_USER: paperless
+      MINIO_ROOT_PASSWORD: paperless
+    volumes:
+      - ./minio_data:/data
+    networks:
+      - paperless-network
 
-      # --- RabbitMQ ---
+  paperless-services:
+    build:
+      context: ./paperless-services
+      dockerfile: Dockerfile
+    container_name: paperless-services
+    environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: paperless
       SPRING_RABBITMQ_PASSWORD: paperless
-      RABBITMQ_EXCHANGE: document_exchange
-      PAPERLESSWORKER_RABBITMQ_PROCESSING_QUEUE: "document_processing_queue"
-      PAPERLESSWORKER_RABBITMQ_RESULT_QUEUE: "document_result_queue"
-      PAPERLESSWORKER_ELASTICSEARCH_URIS: "http://elasticsearch:9200"
-      PAPERLESSWORKER_MINIO_URL: "http://minio:9000"
-      PAPERLESSWORKER_MINIO_ACCESS_KEY: "paperless"
-      PAPERLESSWORKER_MINIO_SECRET_KEY: "paperless"
-      # --- Tesseract / OCR ---
-      TESSERACT_DATAPATH: /usr/share/tesseract-ocr/4.00/tessdata
-      TESSERACT_LANGUAGE: eng
-
-
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_KEY: paperless
+      MINIO_SECRET_KEY: paperless
+      RABBITMQ_PROCESSING_QUEUE: document_processing_queue
+      RABBITMQ_RESULT_QUEUE: document_result_queue
+    ports:
+      - "8082:8082"
     depends_on:
       - rabbitmq
       - minio
       - elasticsearch
-    ports:
-      - "8082:8082"
+    networks:
+      - paperless-network
 
-  ##########################################################################
-  # ELASTICSEARCH
-  ##########################################################################
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
     environment:
-      discovery.type: single-node
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-      xpack.security.enabled: "false"
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length
+      - logger.level=error
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
+    networks:
+      - paperless-network
+
+networks:
+  paperless-network:
+    driver: bridge
+
+volumes:
+    es-data:
