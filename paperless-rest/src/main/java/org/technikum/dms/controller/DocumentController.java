@@ -2,7 +2,6 @@ package org.technikum.dms.controller;
 
 import org.technikum.dms.dto.DocumentDTO;
 import org.technikum.dms.dto.DocumentWithFileDTO;
-import org.technikum.dms.elastic.ElasticsearchSearcher;
 import org.technikum.dms.entity.Document;
 import org.technikum.dms.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,33 +25,33 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    public DocumentController(DocumentService documentService, ElasticsearchSearcher elasticsearchSearcher) {
+    public DocumentController(DocumentService documentService) {
         this.documentService = documentService;
     }
 
-    @Operation(summary = "Uploads a document")
+    @Operation(summary = "Uploading a document")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Document uploaded successfully", content = @Content(schema = @Schema(implementation = Document.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid file format or bad request"),
+            @ApiResponse(responseCode = "200", description = "Document upload successful", content = @Content(schema = @Schema(implementation = Document.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid file format / bad request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentDTO> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             DocumentDTO document = documentService.uploadFile(file);
-            return ResponseEntity.status(201).body(document);
+            return ResponseEntity.ok().body(document);
         } catch (IllegalArgumentException e) {
             log.error("Invalid file format: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            log.error("Error uploading document: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            log.error("Error while uploading document: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
     @Operation(summary = "Deletes a document")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Document deleted successfully"),
+            @ApiResponse(responseCode = "200", description = "Document deletion successful"),
             @ApiResponse(responseCode = "404", description = "Document not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
@@ -60,17 +59,17 @@ public class DocumentController {
     public ResponseEntity<Void> deleteDocument(@PathVariable String id) {
         try {
             documentService.deleteDocument(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             log.error("Document not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.error("Error deleting document with ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            log.error("Error while deleting document with ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @Operation(summary = "Fetches a document by ID")
+    @Operation(summary = "Get a document by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Document retrieved successfully", content = @Content(schema = @Schema(implementation = Document.class))),
             @ApiResponse(responseCode = "404", description = "Document not found"),
@@ -79,51 +78,49 @@ public class DocumentController {
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> getDocumentById(@PathVariable String id) {
         try {
-            byte[] pdfFile = documentService.getDocumentFileById(id);
             DocumentDTO document = documentService.getDocumentById(id);
-            if (document == null || pdfFile == null) {
+            byte[] pdfFile = documentService.getDocumentFileById(id);
+
+            if (pdfFile == null || document == null) {
                 return ResponseEntity.notFound().build();
             }
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", document.getFilename());
+            headers.setContentType(MediaType.APPLICATION_PDF);
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfFile);
+            return ResponseEntity.ok().headers(headers).body(pdfFile);
         } catch (IllegalArgumentException e) {
             log.error("Document not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.error("Error retrieving document with ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            log.error("Error while retrieving the document with ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @Operation(summary = "Fetches all documents")
+    @Operation(summary = "Get all documents")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Documents retrieved successfully", content = @Content(schema = @Schema(implementation = DocumentDTO.class))),
+            @ApiResponse(responseCode = "200", description = "All documents retrieved successfully", content = @Content(schema = @Schema(implementation = DocumentDTO.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
     public ResponseEntity<List<DocumentDTO>> getAllDocuments() {
         try {
             List<DocumentDTO> documents = documentService.getAllDocuments();
-            // Change this to info level
-            log.info("Found {} documents", documents.size());  // Changed from error to info
+            log.info("Found {} documents", documents.size());
             return ResponseEntity.ok(documents);
         } catch (Exception e) {
             log.error("Error retrieving documents: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @Operation(summary = "Searches documents by query and fetches additional data")
+    @Operation(summary = "Searches documents with a query and fetches additional data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Documents retrieved successfully",
                     content = @Content(schema = @Schema(implementation = DocumentWithFileDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid query parameter"),
+            @ApiResponse(responseCode = "400", description = "Invalid query"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/search")
@@ -134,13 +131,13 @@ public class DocumentController {
                 return ResponseEntity.badRequest().build();
             }
 
-            log.info("Searching documents with query: {}", query);
+            log.info("Searching documents with the query: {}", query);
             List<DocumentDTO> results = documentService.searchDocuments(query);
             return ResponseEntity.ok(results);
 
         } catch (Exception e) {
             log.error("Error occurred while searching documents: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
