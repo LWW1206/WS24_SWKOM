@@ -34,12 +34,10 @@ public class ElasticsearchSearcher {
                     )
             );
 
-            // Elasticsearch-Suche ausführen
             SearchResponse<DocumentSearchResultDTO> searchResponse = elasticsearchClient.search(searchRequest, DocumentSearchResultDTO.class);
 
             log.info("Elasticsearch returned {} results for query: {}", searchResponse.hits().hits().size(), query);
 
-            // Ergebnisse mappen und null-Quellen filtern
             return searchResponse.hits().hits().stream()
                     .map(Hit::source)
                     .filter(Objects::nonNull)
