@@ -1,6 +1,7 @@
 package org.technikum.dms.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +27,7 @@ import static org.mockito.BDDMockito.*;
 
 
 @SpringBootTest
+@Disabled("Only run manually once application is running")
 public class DocumentServiceTests {
 
     @MockBean
