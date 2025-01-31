@@ -24,7 +24,6 @@ public class RabbitMQResultListener {
             JSONObject jsonMessage = new JSONObject(message);
             String documentId = jsonMessage.getString("documentId");
 
-            // Find document by ID and update ocrJobDone
             Document document = documentRepository.findById(documentId)
                     .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + documentId));
 

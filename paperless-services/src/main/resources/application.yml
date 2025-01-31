@@ -1,0 +1,50 @@
+# Server Configuration
+server:
+  port: 8082
+
+# Spring Core Configuration
+spring:
+  # Enable debug logging
+  debug: true
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: rabbitmq
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:paperless}
+    password: ${SPRING_RABBITMQ_PASSWORD:paperless}
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  # Elasticsearch Configuration
+  elasticsearch:
+    uris: http://elasticsearch:9200
+
+# RabbitMQ Queue Names
+rabbitmq:
+  processing:
+    queue: document_processing_queue
+  result:
+    queue: document_result_queue
+
+# MinIO Configuration
+minio:
+  url: http://minio:9000
+  access-key: paperless
+  secret-key: paperless
+  bucket-name: documents
+
+# Tesseract Configuration
+tesseract:
+  data-path: /usr/share/tesseract-ocr/5.0/tessdata
+  language: eng
+  dpi: 300
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
